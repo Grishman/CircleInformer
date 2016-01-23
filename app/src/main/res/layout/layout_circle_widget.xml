@@ -2,11 +2,14 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/black"
     android:fitsSystemWindows="true">
 
-    <TextView
+    <ImageView
+        android:layout_margin="@dimen/circle_image_margin"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@drawable/shape_empty_circle"
         android:text="@string/dummy_text" />
 
 </RelativeLayout>
