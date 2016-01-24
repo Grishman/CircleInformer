@@ -41,12 +41,24 @@ public class UpdateWidgetService extends Service {
 
             PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, clickIntent,
                     PendingIntent.FLAG_UPDATE_CURRENT);
-            remoteViews.setTextViewText(R.id.text_test,"lolkkaksk");
+            updateUI(remoteViews);
             appWidgetManager.updateAppWidget(widgetId, remoteViews);
         }
         stopSelf();
 
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    private void updateUI(RemoteViews remoteViews) {
+        if(!NetChecker.isOnline(getApplicationContext())){
+            remoteViews.setTextViewText(R.id.text_test,"No Internet");
+        }
+        if(NetChecker.is3gOr2gConnected(getApplicationContext())){
+            remoteViews.setTextViewText(R.id.text_test,"Mobile internet");
+        }
+        if(NetChecker.isWifiAvailable(getApplicationContext())){
+            remoteViews.setTextViewText(R.id.text_test,"Wifi connected");
+        }
     }
 
     @Override
