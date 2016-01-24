@@ -50,14 +50,19 @@ public class UpdateWidgetService extends Service {
     }
 
     private void updateUI(RemoteViews remoteViews) {
-        if(!NetChecker.isOnline(getApplicationContext())){
-            remoteViews.setTextViewText(R.id.text_test,"No Internet");
+        if (!NetChecker.isOnline(getApplicationContext())) {
+            remoteViews.setImageViewResource(R.id.image_indicator, R.drawable.shape_filled_circle);
+            remoteViews.setTextViewText(R.id.text_test, "No Internet");
         }
-        if(NetChecker.is3gOr2gConnected(getApplicationContext())){
-            remoteViews.setTextViewText(R.id.text_test,"Mobile internet");
+        if (NetChecker.is3gOr2gConnected(getApplicationContext())) {
+            remoteViews.setImageViewResource(R.id.image_indicator, R.drawable.shape_filled_circle_yellow);
+            remoteViews.setTextColor(R.id.text_test, getResources().getColor(R.color.colorNiceBlue));
+            remoteViews.setTextViewText(R.id.text_test, "Mobile internet");
         }
-        if(NetChecker.isWifiAvailable(getApplicationContext())){
-            remoteViews.setTextViewText(R.id.text_test,"Wifi connected");
+        if (NetChecker.isWifiAvailable(getApplicationContext())) {
+            remoteViews.setImageViewResource(R.id.image_indicator, R.drawable.shape_filled_circle_red);
+            remoteViews.setTextColor(R.id.text_test, getResources().getColor(R.color.colorNiceBlue));
+            remoteViews.setTextViewText(R.id.text_test, "WiFi connected");
         }
     }
 
