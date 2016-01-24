@@ -15,28 +15,23 @@
         android:theme="@style/AppTheme">
         <!-- Receivers-->
         <receiver
-            android:name=".CircleInformerWidget"
-            android:icon="@mipmap/ic_launcher"
+            android:name=".ui.CircleInformerWidget"
+            android:icon="@drawable/widget_preview"
             android:label="@string/widget_display_name">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+                <action android:name="android.intent.action.AIRPLANE_MODE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/circle_widget_metadata" />
         </receiver>
-
-        <receiver android:name=".ConnectivityReceiver">
-            <intent-filter>
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
-            </intent-filter>
-        </receiver>
         <!-- Services -->
         <service
-            android:name=".UpdateWidgetService"
+            android:name=".services.UpdateWidgetService"
             android:exported="false" />
     </application>
 

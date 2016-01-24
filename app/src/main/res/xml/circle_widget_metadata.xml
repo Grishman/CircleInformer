@@ -3,7 +3,7 @@
     android:initialLayout="@layout/layout_circle_widget"
     android:minHeight="110dp"
     android:minWidth="110dp"
-    android:previewImage="@mipmap/ic_launcher"
-    android:updatePeriodMillis="1800000"
+    android:previewImage="@drawable/widget_preview"
+    android:updatePeriodMillis="0"
     android:widgetCategory="home_screen">
 </appwidget-provider>
