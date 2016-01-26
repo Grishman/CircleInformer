@@ -72,9 +72,11 @@ public class NetChecker {
      * @return is network connect
      */
     public static boolean is3gOr2gConnected(Context context) {
-        ConnectivityManager connectManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connectManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
-        return networkInfo != null && (networkInfo.isConnectedOrConnecting() || networkInfo.getState() == NetworkInfo.State.CONNECTED || networkInfo.getState() == NetworkInfo.State.CONNECTING);
+        NetworkInfo info = getNetworkInfo(context);
+        if (info == null || info.getType() != ConnectivityManager.TYPE_MOBILE) {
+            return false;
+        }
+        return info.isConnected();
     }
 
     /**
@@ -86,12 +88,13 @@ public class NetChecker {
     }
 
     /**
-     * @param Context context
+     * @param context
      * @return boolean is Airplane Mode enabled
      **/
     public static boolean isAirplaneModeOn(Context context) {
         return Settings.Global.getInt(context.getContentResolver(),
                 Settings.Global.AIRPLANE_MODE_ON, 0) != 0;
-
     }
+
 }
+

@@ -29,10 +29,6 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/circle_widget_metadata" />
         </receiver>
-        <!-- Services -->
-        <service
-            android:name=".services.UpdateWidgetService"
-            android:exported="false" />
     </application>
 
 </manifest>
