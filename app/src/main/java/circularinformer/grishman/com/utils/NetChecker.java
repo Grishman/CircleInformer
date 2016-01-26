@@ -5,7 +5,12 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 import android.provider.Settings;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 /**
  * Class for checking network
@@ -86,12 +91,59 @@ public class NetChecker {
     }
 
     /**
-     * @param Context context
+     * @param context
      * @return boolean is Airplane Mode enabled
      **/
     public static boolean isAirplaneModeOn(Context context) {
         return Settings.Global.getInt(context.getContentResolver(),
                 Settings.Global.AIRPLANE_MODE_ON, 0) != 0;
-
     }
+
+    /**
+     * Read connection timeout
+     */
+    private static final int READ_TIMEOUT = 100000;
+
+    /**
+     * Common connecton timeout
+     */
+    private static final int CONNECTION_TIMEOUT = 150000;
+
+    public static void getGoogle() throws IOException {
+        new DownloadWebpageTask().execute("http://www.google.com");
+    }
+
+    private static class DownloadWebpageTask extends AsyncTask<String, Void, Boolean> {
+        @Override
+        protected Boolean doInBackground(String... urls) {
+
+            // params comes from the execute() call: params[0] is the url.
+            try {
+                boolean isok = false;
+                URL url = new URL(urls[0]);
+                HttpURLConnection urlConnection = (HttpURLConnection) url
+                        .openConnection();
+                urlConnection.setReadTimeout(READ_TIMEOUT);
+                urlConnection.setConnectTimeout(CONNECTION_TIMEOUT);
+                //urlConnection.setRequestMethod(httpMethod.getName());
+                // urlConnection.setDoInput(true);
+                if (urlConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    isok=true;
+                }
+                return isok;
+            } catch (IOException e) {
+                //return "Unable to retrieve web page. URL may be invalid.";
+                return false;
+            }
+        }
+
+        // onPostExecute displays the results of the AsyncTask.
+        @Override
+        protected void onPostExecute(Boolean result) {
+            boolean result2=result;
+            //textView.setText(result);
+        }
+    }
+
 }
+

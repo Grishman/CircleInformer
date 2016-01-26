@@ -3,11 +3,16 @@ package circularinformer.grishman.com.services;
 import android.app.Service;
 import android.appwidget.AppWidgetManager;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.IBinder;
 import android.widget.RemoteViews;
 
-import circularinformer.grishman.com.utils.NetChecker;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 import circularinformer.grishman.com.R;
+import circularinformer.grishman.com.utils.NetChecker;
 
 /**
  * Service to update widget
@@ -46,6 +51,7 @@ public class UpdateWidgetService extends Service {
             remoteViews.setTextViewText(R.id.connectivity_type_text, getString(R.string.msg_mobile));
         }
         if (NetChecker.isWifiAvailable(getApplicationContext())) {
+            new DownloadWebpageTask().execute("http://www.google.com");
             //TODO check security type
             if (NetChecker.getSecurityTypeWifi(getApplicationContext()) == NetChecker.SECURITY_EAP) {
                 remoteViews.setImageViewResource(R.id.image_indicator, R.drawable.shape_filled_circle_green);
@@ -56,7 +62,46 @@ public class UpdateWidgetService extends Service {
             }
         }
     }
+    /**
+     * Read connection timeout
+     */
+    private static final int READ_TIMEOUT = 100000;
 
+    /**
+     * Common connecton timeout
+     */
+    private static final int CONNECTION_TIMEOUT = 150000;
+    private  class DownloadWebpageTask extends AsyncTask<String, Void, Boolean> {
+        @Override
+        protected Boolean doInBackground(String... urls) {
+
+            // params comes from the execute() call: params[0] is the url.
+            try {
+                boolean isok = false;
+                URL url = new URL(urls[0]);
+                HttpURLConnection urlConnection = (HttpURLConnection) url
+                        .openConnection();
+                urlConnection.setReadTimeout(READ_TIMEOUT);
+                urlConnection.setConnectTimeout(CONNECTION_TIMEOUT);
+                //urlConnection.setRequestMethod(httpMethod.getName());
+                // urlConnection.setDoInput(true);
+                if (urlConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    isok=true;
+                }
+                return isok;
+            } catch (IOException e) {
+                //return "Unable to retrieve web page. URL may be invalid.";
+                return false;
+            }
+        }
+
+        // onPostExecute displays the results of the AsyncTask.
+        @Override
+        protected void onPostExecute(Boolean result) {
+            boolean result2=result;
+            //textView.setText(result);
+        }
+    }
     @Override
     public IBinder onBind(Intent intent) {
         return null;
