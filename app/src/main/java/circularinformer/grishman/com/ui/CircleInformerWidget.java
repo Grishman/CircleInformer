@@ -20,13 +20,27 @@ import circularinformer.grishman.com.utils.NetChecker;
  */
 public class CircleInformerWidget extends AppWidgetProvider {
 
+
+    /**
+     * Read connection timeout
+     */
+    private static final int READ_TIMEOUT = 100000;
+
+    /**
+     * Common connecton timeout
+     */
+    private static final int CONNECTION_TIMEOUT = 150000;
+
+    private boolean isWifiEncrypted;
+    private boolean isMobileConnected;
+    private RemoteViews mRemoteViews;
+    private int[] mWidgetIds = null;
+    private AppWidgetManager mAppWidgetManager;
+
     public CircleInformerWidget() {
         super();
     }
 
-    RemoteViews remoteViews;
-    int[] allWidgetIds = null;
-    AppWidgetManager mAppWidgetManager;
 
     @Override
     public void onEnabled(Context context) {
@@ -57,84 +71,72 @@ public class CircleInformerWidget extends AppWidgetProvider {
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         super.onUpdate(context, appWidgetManager, appWidgetIds);
-        // Build the intent to call the service
-//        Intent intent = new Intent(context.getApplicationContext(),
-//                UpdateWidgetService.class);
-//        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, appWidgetIds);
-//        // Update the widgets via the service
-//        context.startService(intent);
         mAppWidgetManager = appWidgetManager;
-
-        allWidgetIds = appWidgetIds;
-        remoteViews = new RemoteViews(context.getPackageName(),
+        mWidgetIds = appWidgetIds;
+        mRemoteViews = new RemoteViews(context.getPackageName(),
                 R.layout.layout_circle_widget);
         if (!NetChecker.isOnline(context)) {
-            remoteViews.setImageViewResource(R.id.image_indicator, R.drawable.shape_empty_circle);
-            remoteViews.setTextViewText(R.id.connectivity_type_text, context.getResources().getString(R.string.msg_no_internet));
+            mRemoteViews.setImageViewResource(R.id.image_indicator, R.drawable.shape_empty_circle);
+            mRemoteViews.setTextViewText(R.id.connectivity_type_text, context.getResources().getString(R.string.msg_no_internet));
         }
         if (!NetChecker.isOnline(context) && NetChecker.isAirplaneModeOn(context)) {
-            remoteViews.setImageViewResource(R.id.image_indicator, R.drawable.shape_filled_circle);
-            remoteViews.setTextViewText(R.id.connectivity_type_text, context.getResources().getString(R.string.msg_no_internet));
+            mRemoteViews.setImageViewResource(R.id.image_indicator, R.drawable.shape_filled_circle);
+            mRemoteViews.setTextViewText(R.id.connectivity_type_text, context.getString(R.string.msg_no_internet));
         }
         if (NetChecker.is3gOr2gConnected(context)) {
-            remoteViews.setImageViewResource(R.id.image_indicator, R.drawable.shape_filled_circle_yellow);
-            remoteViews.setTextViewText(R.id.connectivity_type_text, context.getResources().getString(R.string.msg_mobile));
+            new DownloadWebpageTask().execute(context.getString(R.string.chech_google_condition));
+            isMobileConnected = true;
+            mRemoteViews.setImageViewResource(R.id.image_indicator, R.drawable.shape_empty_circle_yellow);
+            mRemoteViews.setTextViewText(R.id.connectivity_type_text, context.getString(R.string.msg_mobile));
         }
         if (NetChecker.isWifiAvailable(context)) {
-            new DownloadWebpageTask().execute("http://www.google.com");
-            //TODO check security type
+            new DownloadWebpageTask().execute(context.getString(R.string.chech_google_condition));
             if (NetChecker.getSecurityTypeWifi(context) == NetChecker.SECURITY_EAP) {
-                remoteViews.setImageViewResource(R.id.image_indicator, R.drawable.shape_filled_circle_green);
-                remoteViews.setTextViewText(R.id.connectivity_type_text, context.getResources().getString(R.string.msg_encrypted_non_psk));
+                isWifiEncrypted = true;
+                mRemoteViews.setImageViewResource(R.id.image_indicator, R.drawable.shape_empty_circle_green);
+                mRemoteViews.setTextViewText(R.id.connectivity_type_text, context.getString(R.string.msg_encrypted_non_psk));
             } else {
-                remoteViews.setImageViewResource(R.id.image_indicator, R.drawable.shape_filled_circle_red);
-                remoteViews.setTextViewText(R.id.connectivity_type_text, context.getResources().getString(R.string.msg_open_psk));
+                isWifiEncrypted = false;
+                mRemoteViews.setImageViewResource(R.id.image_indicator, R.drawable.shape_empty_circle_red);
+                mRemoteViews.setTextViewText(R.id.connectivity_type_text, context.getString(R.string.msg_open_psk));
             }
         }
-        appWidgetManager.updateAppWidget(appWidgetIds, remoteViews);
+        appWidgetManager.updateAppWidget(appWidgetIds, mRemoteViews);
     }
 
-    /**
-     * Read connection timeout
-     */
-    private static final int READ_TIMEOUT = 100000;
-
-    /**
-     * Common connecton timeout
-     */
-    private static final int CONNECTION_TIMEOUT = 150000;
-
+    // Dummy async task to check that user can open google.com
     private class DownloadWebpageTask extends AsyncTask<String, Void, Boolean> {
         @Override
         protected Boolean doInBackground(String... urls) {
-
-            // params comes from the execute() call: params[0] is the url.
+            boolean isOk = false;
             try {
-                boolean isok = false;
                 URL url = new URL(urls[0]);
                 HttpURLConnection urlConnection = (HttpURLConnection) url
                         .openConnection();
                 urlConnection.setReadTimeout(READ_TIMEOUT);
                 urlConnection.setConnectTimeout(CONNECTION_TIMEOUT);
-                //urlConnection.setRequestMethod(httpMethod.getName());
-                // urlConnection.setDoInput(true);
                 if (urlConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                    isok = true;
+                    isOk = true;
                 }
-                return isok;
+                return isOk;
             } catch (IOException e) {
-                //return "Unable to retrieve web page. URL may be invalid.";
                 return false;
             }
         }
 
-        // onPostExecute displays the results of the AsyncTask.
         @Override
         protected void onPostExecute(Boolean result) {
-            boolean result2 = result;
-            remoteViews.setImageViewResource(R.id.image_indicator, R.drawable.shape_empty_circle);
-            mAppWidgetManager.updateAppWidget(allWidgetIds, remoteViews);
-            //textView.setText(result);
+            if (result) {
+                if (isMobileConnected) {
+                    mRemoteViews.setImageViewResource(R.id.image_indicator, R.drawable.shape_filled_circle_yellow);
+                }
+                if (isWifiEncrypted) {
+                    mRemoteViews.setImageViewResource(R.id.image_indicator, R.drawable.shape_filled_circle_green);
+                } else {
+                    mRemoteViews.setImageViewResource(R.id.image_indicator, R.drawable.shape_filled_circle_red);
+                }
+                mAppWidgetManager.updateAppWidget(mWidgetIds, mRemoteViews);
+            }
         }
     }
 
